@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">JawlineFit</string>
+    <string name="notification_channel_name">Routine reminders</string>
+    <string name="notification_channel_description">Your chosen JawlineFit routine reminders</string>
+</resources>

@@ -1,0 +1,4 @@
+-keepattributes Signature,*Annotation*
+-keep class com.jawlinefit.app.data.remote.** { *; }
+-keep class kotlinx.serialization.** { *; }
+-dontwarn org.conscrypt.**

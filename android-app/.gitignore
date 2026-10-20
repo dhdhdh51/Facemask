@@ -1,0 +1,16 @@
+.gradle/
+.kotlin/
+.android/
+.home/
+local.properties
+**/build/
+*.iml
+.idea/
+app/google-services.json
+*.jks
+*.keystore
+signing.properties
+android-sdk/
+captures/
+.externalNativeBuild/
+.cxx/
