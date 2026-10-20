@@ -19,9 +19,9 @@ class AuthInterceptor(private val auth: FirebaseAuth) : Interceptor {
         val response = chain.proceed(authenticated)
         if (response.code != 401 || initialToken.isNullOrBlank()) return response
 
-        response.close()
         val refreshed = synchronized(refreshLock) { token(forceRefresh = true) }
-        if (refreshed.isNullOrBlank()) return chain.proceed(request)
+        if (refreshed.isNullOrBlank()) return response
+        response.close()
         return chain.proceed(request.newBuilder()
             .header("Authorization", "Bearer $refreshed")
             .header("Accept", "application/json")

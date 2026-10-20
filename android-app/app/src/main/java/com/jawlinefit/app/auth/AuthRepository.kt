@@ -81,8 +81,19 @@ class AuthRepository(private val context: Context, private val auth: FirebaseAut
         }
     }
 
+    fun currentUid(): String? = auth.currentUser?.uid
     fun signOut() = auth.signOut()
-    suspend fun deleteFirebaseUser() = auth.currentUser?.delete()?.await()
 
-    private fun Throwable.userMessage(): String = message?.takeIf { it.isNotBlank() } ?: "Authentication could not be completed."
+    /** Deletes Firebase first; a recent-login failure leaves the backend untouched. */
+    suspend fun deleteFirebaseUserWithAuthorization(): String {
+        val user = requireNotNull(auth.currentUser) { "No signed-in account is available." }
+        val token = requireNotNull(user.getIdToken(true).await().token) { "Authentication token is unavailable." }
+        user.delete().await()
+        return "Bearer $token"
+    }
+
+    private fun Throwable.userMessage(): String = when (this) {
+        is NoCredentialException -> "No eligible Google account is available on this device."
+        else -> "Authentication could not be completed. Check your details and connection, then try again."
+    }
 }

@@ -1,0 +1,9 @@
+Build consistent facial fitness, posture, skincare, and self-care habits with JawlineFit.
+
+Follow admin-published guided routines with timed steps and safety checks. Track routine completion and streaks, browse posture and habit tips, and explore skincare nuskhe with ingredient, allergy, patch-test, frequency, and warning guidance.
+
+Use the optional on-device face check to record a visual symmetry score and estimated jaw angle over time. Face and progress photos remain in app-private storage and are never uploaded. Compare private photos, review your timeline, and delete all local progress whenever you choose.
+
+Set a daily reminder, use the app in English or Hindi, and access optional premium content through Google Play subscriptions. Localized prices and billing periods are always shown by Google Play.
+
+Results vary. Facial structure is largely genetic. This is not medical advice. Face-check values are estimates for habit tracking, not medical measurements. Stop any routine that causes pain or discomfort and consult a qualified doctor or dentist when appropriate.

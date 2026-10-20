@@ -1,0 +1,8 @@
+/vendor/
+/uploads/*
+!/uploads/.htaccess
+!/uploads/.gitkeep
+/storage/
+*.log
+.env
+config.local.php

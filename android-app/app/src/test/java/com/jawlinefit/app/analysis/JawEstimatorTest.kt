@@ -5,11 +5,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class JawEstimatorTest {
-    @Test fun `symmetric centered contour produces high symmetry`() {
+    @Test fun `symmetric centered contour produces high symmetry and jaw angle`() {
         val result = JawEstimator.assess(face(symmetricContour()))
         assertTrue(result is FaceAssessment.Accepted)
         assertTrue((result as FaceAssessment.Accepted).metrics.symmetryPercent >= 95.0)
-        assertTrue(result.metrics.jawDefinitionPercent in 0.0..100.0)
+        assertTrue(result.metrics.jawAngleDegrees in 0.0..180.0)
     }
 
     @Test fun `asymmetric contour scores below symmetric contour`() {
@@ -21,9 +21,19 @@ class JawEstimatorTest {
         assertTrue(asymmetric < symmetric)
     }
 
-    @Test fun `turned face is rejected`() {
-        val result = JawEstimator.assess(face(symmetricContour()).copy(yawDegrees = 14.0))
+    @Test fun `yaw beyond eight degrees is rejected`() {
+        val result = JawEstimator.assess(face(symmetricContour()).copy(yawDegrees = 8.1))
         assertEquals("Look straight at the camera.", (result as FaceAssessment.Rejected).reason)
+    }
+
+    @Test fun `pitch beyond eight degrees is rejected`() {
+        val result = JawEstimator.assess(face(symmetricContour()).copy(pitchDegrees = -8.1))
+        assertEquals("Look straight at the camera.", (result as FaceAssessment.Rejected).reason)
+    }
+
+    @Test fun `roll beyond eight degrees is rejected`() {
+        val result = JawEstimator.assess(face(symmetricContour()).copy(rollDegrees = 8.1))
+        assertEquals("Keep your head level.", (result as FaceAssessment.Rejected).reason)
     }
 
     @Test fun `small face is rejected`() {
@@ -36,7 +46,7 @@ class JawEstimatorTest {
         assertEquals("Keep your full face inside the guide.", (result as FaceAssessment.Rejected).reason)
     }
 
-    private fun face(points: List<FacePoint>) = FaceGeometry(points, 1000, 1000, 400.0, 500.0, 0.0, 0.0)
+    private fun face(points: List<FacePoint>) = FaceGeometry(points, 1000, 1000, 400.0, 500.0, 0.0, 0.0, 0.0)
 
     private fun symmetricContour(): List<FacePoint> {
         val left = (0 until 18).map { index ->

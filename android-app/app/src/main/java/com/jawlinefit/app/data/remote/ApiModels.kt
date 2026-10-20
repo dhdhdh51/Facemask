@@ -1,66 +1,110 @@
 package com.jawlinefit.app.data.remote
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class HomeContent(
-    val greeting: String = "",
-    val headline: String = "",
-    val featuredRoutine: Routine? = null,
-    val featuredTip: Tip? = null,
-    val announcement: String? = null
+data class ApiEnvelope<T>(
+    val success: Boolean,
+    val data: T? = null,
+    val error: String? = null
 )
 
 @Serializable
+data class Me(
+    val uid: String,
+    val plan: String? = null,
+    @SerialName("plan_expiry") val planExpiry: String? = null,
+    @SerialName("is_premium") val isPremium: Boolean
+)
+
+@Serializable
+data class HomeContent(
+    val featuredRoutine: Routine? = null,
+    val featuredTip: Tip? = null,
+    val completionStreak: Int = 0
+)
+
+@Serializable
+enum class MediaType {
+    @SerialName("image") IMAGE,
+    @SerialName("gif") GIF,
+    @SerialName("video") VIDEO
+}
+
+@Serializable
 data class Routine(
-    val id: String,
+    val id: Long,
     val title: String,
-    val summary: String,
-    val durationSeconds: Int,
-    val safetyNotice: String,
-    val thumbnailUrl: String? = null,
-    val premium: Boolean = false,
+    val description: String,
+    @SerialName("duration_min") val durationMin: Int,
+    @SerialName("is_premium") val isPremium: Boolean,
+    @SerialName("media_type") val mediaType: MediaType? = null,
+    @SerialName("media_url") val mediaUrl: String? = null,
+    @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
     val steps: List<RoutineStep> = emptyList()
 )
 
 @Serializable
 data class RoutineStep(
-    val id: String,
+    val order: Int,
     val title: String,
+    @SerialName("duration_sec") val durationSec: Int,
     val instruction: String,
-    val durationSeconds: Int,
-    val mediaUrl: String? = null,
-    val mediaType: String? = null
+    @SerialName("media_type") val mediaType: MediaType? = null,
+    @SerialName("media_url") val mediaUrl: String? = null,
+    @SerialName("thumbnail_url") val thumbnailUrl: String? = null
 )
 
 @Serializable
 data class Nuskha(
-    val id: String,
+    val id: Long,
     val title: String,
-    val summary: String,
-    val instructions: String,
-    val category: String,
-    val ingredients: List<String> = emptyList(),
-    val allergyTags: List<String> = emptyList(),
-    val patchTestNotice: String,
-    val mediaUrl: String? = null,
-    val mediaType: String? = null
+    val concern: String,
+    @SerialName("skin_type") val skinType: String,
+    val ingredients: List<String>,
+    val steps: List<String>,
+    val frequency: String,
+    val warning: String? = null,
+    @SerialName("is_premium") val isPremium: Boolean,
+    @SerialName("media_type") val mediaType: MediaType? = null,
+    @SerialName("media_url") val mediaUrl: String? = null,
+    @SerialName("thumbnail_url") val thumbnailUrl: String? = null
 )
 
 @Serializable
 data class Tip(
-    val id: String,
-    val title: String,
-    val body: String,
+    val id: Long,
     val category: String,
-    val mediaUrl: String? = null
+    val text: String,
+    @SerialName("media_type") val mediaType: MediaType? = null,
+    @SerialName("media_url") val mediaUrl: String? = null,
+    @SerialName("thumbnail_url") val thumbnailUrl: String? = null
 )
 
-@Serializable data class RoutineListResponse(val items: List<Routine> = emptyList())
-@Serializable data class NuskhaListResponse(val items: List<Nuskha> = emptyList(), val categories: List<String> = emptyList())
-@Serializable data class TipListResponse(val items: List<Tip> = emptyList())
-@Serializable data class SubscriptionVerificationRequest(val purchaseToken: String, val productId: String)
-@Serializable data class SubscriptionStatus(val active: Boolean, val expiresAtEpochMillis: Long? = null, val manageUrl: String? = null)
-@Serializable data class DeleteAccountRequest(val confirmation: String = "DELETE")
-@Serializable data class ApiMessage(val message: String)
-@Serializable data class DeviceTokenRequest(val token: String, val platform: String = "android")
+@Serializable
+data class Plan(
+    val id: Long,
+    val name: String,
+    @SerialName("product_id") val productId: String,
+    @SerialName("base_plan_id") val basePlanId: String,
+    @SerialName("duration_days") val durationDays: Int
+)
+
+@Serializable
+data class BillingVerificationRequest(
+    @SerialName("product_id") val productId: String,
+    @SerialName("purchase_token") val purchaseToken: String
+)
+
+@Serializable
+data class BillingVerification(
+    @SerialName("is_premium") val isPremium: Boolean,
+    @SerialName("plan_expiry") val planExpiry: String? = null
+)
+
+@Serializable
+data class DeviceTokenRequest(@SerialName("fcm_token") val fcmToken: String)
+
+@Serializable
+data class DeviceRegistration(@SerialName("fcm_token") val fcmToken: String)

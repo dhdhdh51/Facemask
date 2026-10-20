@@ -1,3 +1,4 @@
+import java.net.URI
 import java.util.Properties
 
 plugins {
@@ -10,11 +11,21 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
 }
 
-val apiBaseUrl = providers.gradleProperty("API_BASE_URL").get()
-val privacyUrl = providers.gradleProperty("PRIVACY_URL").get()
-val termsUrl = providers.gradleProperty("TERMS_URL").get()
+fun requiredHttpsProperty(name: String): String {
+    val value = providers.gradleProperty(name).get()
+    val uri = URI(value)
+    require(uri.scheme == "https" && !uri.host.isNullOrBlank()) { "$name must be an absolute HTTPS URL" }
+    return value
+}
+fun quoted(value: String): String = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+val apiBaseUrl = requiredHttpsProperty("API_BASE_URL")
+val privacyUrl = requiredHttpsProperty("PRIVACY_URL")
+val termsUrl = requiredHttpsProperty("TERMS_URL")
+val accountDeletionUrl = requiredHttpsProperty("ACCOUNT_DELETION_URL")
 val googleWebClientId = providers.gradleProperty("GOOGLE_WEB_CLIENT_ID").orElse("").get()
-val buildNumber = providers.gradleProperty("BUILD_NUMBER").orElse("1").get().toInt()
+val buildNumber = providers.gradleProperty("BUILD_NUMBER").orElse("1").get().toIntOrNull()
+    ?.takeIf { it > 0 } ?: error("BUILD_NUMBER must be a positive integer")
 val signingPropertiesFile = rootProject.file("signing.properties")
 val signingProperties = Properties().apply {
     if (signingPropertiesFile.exists()) signingPropertiesFile.inputStream().use(::load)
@@ -33,10 +44,11 @@ android {
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
-        buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.trimEnd('/')}/\"")
-        buildConfigField("String", "PRIVACY_URL", "\"$privacyUrl\"")
-        buildConfigField("String", "TERMS_URL", "\"$termsUrl\"")
-        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+        buildConfigField("String", "API_BASE_URL", quoted("${apiBaseUrl.trimEnd('/')}/"))
+        buildConfigField("String", "PRIVACY_URL", quoted(privacyUrl))
+        buildConfigField("String", "TERMS_URL", quoted(termsUrl))
+        buildConfigField("String", "ACCOUNT_DELETION_URL", quoted(accountDeletionUrl))
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", quoted(googleWebClientId))
     }
 
     signingConfigs {

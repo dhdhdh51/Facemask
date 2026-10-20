@@ -11,23 +11,24 @@ data class FaceGeometry(
     val imageHeight: Int,
     val faceWidth: Double,
     val faceHeight: Double,
+    val pitchDegrees: Double,
     val yawDegrees: Double,
     val rollDegrees: Double
 )
-data class JawMetrics(val symmetryPercent: Double, val jawDefinitionPercent: Double)
+data class JawMetrics(val symmetryPercent: Double, val jawAngleDegrees: Double)
 
 sealed interface FaceAssessment {
     data class Accepted(val metrics: JawMetrics) : FaceAssessment
     data class Rejected(val reason: String) : FaceAssessment
 }
 
-/** Geometric wellness estimate only; it does not identify people or diagnose health conditions. */
+/** A geometric appearance estimate. It does not identify people or assess health. */
 object JawEstimator {
     fun assess(face: FaceGeometry): FaceAssessment {
         if (face.imageWidth <= 0 || face.imageHeight <= 0 || face.faceWidth <= 0 || face.faceHeight <= 0) return reject("Camera frame is invalid.")
         if (face.contour.size < 20) return reject("Keep your full face inside the guide.")
         if (face.faceWidth / face.imageWidth < 0.28) return reject("Move a little closer to the camera.")
-        if (abs(face.yawDegrees) > 12.0) return reject("Look straight at the camera.")
+        if (abs(face.pitchDegrees) > 8.0 || abs(face.yawDegrees) > 8.0) return reject("Look straight at the camera.")
         if (abs(face.rollDegrees) > 8.0) return reject("Keep your head level.")
 
         val centerX = face.contour.sumOf { it.x } / face.contour.size
@@ -38,7 +39,7 @@ object JawEstimator {
             val right = normalized[normalized.lastIndex - index]
             abs(abs(left.x) - abs(right.x)) + abs(left.y - right.y) * 0.65
         }
-        val symmetry = (100.0 * (1.0 - (deviations.average() / 0.25))).coerceIn(0.0, 100.0)
+        val symmetry = (100.0 * (1.0 - deviations.average() / 0.25)).coerceIn(0.0, 100.0)
 
         val chinIndex = normalized.indices.maxBy { normalized[it].y }
         val spread = (normalized.size / 6).coerceAtLeast(2)
@@ -46,8 +47,7 @@ object JawEstimator {
         val rightIndex = (chinIndex + spread).coerceAtMost(normalized.lastIndex)
         if (leftIndex == chinIndex || rightIndex == chinIndex) return reject("Keep your chin inside the guide.")
         val angle = angleDegrees(normalized[leftIndex], normalized[chinIndex], normalized[rightIndex])
-        val definition = ((170.0 - angle) / 0.9).coerceIn(0.0, 100.0)
-        return FaceAssessment.Accepted(JawMetrics(roundOne(symmetry), roundOne(definition)))
+        return FaceAssessment.Accepted(JawMetrics(roundOne(symmetry), roundOne(angle)))
     }
 
     private fun angleDegrees(a: FacePoint, vertex: FacePoint, b: FacePoint): Double {

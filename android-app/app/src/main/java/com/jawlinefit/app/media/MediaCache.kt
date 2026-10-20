@@ -20,4 +20,9 @@ class MediaCache(context: Context) {
         .setCache(cache)
         .setUpstreamDataSourceFactory(DefaultDataSource.Factory(appContext))
         .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+    fun clear() {
+        cache.keys.toList().forEach(cache::removeResource)
+    }
+
+    fun release() = cache.release()
 }

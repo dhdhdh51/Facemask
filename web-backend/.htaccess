@@ -1,0 +1,35 @@
+Options -Indexes
+DirectoryIndex public/index.php
+
+SetEnvIf Authorization "(.+)" HTTP_AUTHORIZATION=$1
+
+<FilesMatch "^(?:config(?:\.sample)?\.php|install\.sql|composer\.(?:json|lock))$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^(?:config(?:\.sample)?\.php|install\.sql|composer\.(?:json|lock)|includes/|vendor/|bin/|storage/|\.verification/) - [F,L,NC]
+RewriteRule ^public/assets/ - [L]
+RewriteRule ^uploads/ - [L]
+RewriteRule ^ public/index.php [L,QSA]
+</IfModule>
+
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'"
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+</IfModule>
+
+<IfModule mod_php.c>
+php_value upload_max_filesize 52M
+php_value post_max_size 64M
+php_value max_execution_time 120
+php_value max_input_time 120
+php_value memory_limit 256M
+php_flag display_errors Off
+php_flag log_errors On
+</IfModule>
